@@ -1,0 +1,30 @@
+192.168.5.40  kube-master kube-master.example.jilugu2
+192.168.5.50  kube-worker1 kube-worker1.example.jilugu2
+192.168.5.60  kube-worker2 kube-worker2.example.jilugu2
+
+
+# Master firewall
+firewall-cmd --permanent --add-port 6443/tcp
+firewall-cmd --permanent --add-port 2379-2380/tcp
+firewall-cmd --permanent --add-port 10250-10252/tcp
+firewall-cmd --reload
+
+# worker firewall
+firewall-cmd --permanent --add-port 30000-32767/tcp
+firewall-cmd --permanent --add-port 10250/tcp
+firewall-cmd --reload
+
+# master
+nmcli con mod enp0s8 ipv4.addresses 192.168.5.40/24
+nmcli connection mod enp0s8 ipv4.dns 8.8.8.8
+hostnamectl set-hostname kube-master.example.jilugu2
+
+# worker1
+nmcli con mod enp0s8 ipv4.addresses 192.168.5.50/24
+nmcli connection mod enp0s8 ipv4.dns 8.8.8.8
+hostnamectl set-hostname kube-worker1.example.jilugu2
+
+# worker2
+nmcli con mod enp0s8 ipv4.addresses 192.168.5.60/24
+nmcli connection mod enp0s8 ipv4.dns 8.8.8.8
+hostnamectl set-hostname kube-worker2.example.jilugu2
