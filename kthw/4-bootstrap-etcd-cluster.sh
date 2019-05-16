@@ -15,9 +15,9 @@ sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
 
 ## Env vars for creating etcd service file
 #  Controller 1
-ETCD_NAME=mjilugu1c.mylabserver.com
+ETCD_NAME=<cloud server hostname>
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-INITIAL_CLUSTER=mjilugu1c.mylabserver.com=https://172.31.31.27:2380,mjilugu2c.mylabserver.com=https://172.31.21.192:2380
+INITIAL_CLUSTER=<controller 1 hostname>=https://<controller 1 private ip>:2380,<controller 2 hostname>=https://<controller 2 private ip>:2380
 
 cat << EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
@@ -51,9 +51,9 @@ WantedBy=multi-user.target
 EOF
 
 #  Controller 2
-ETCD_NAME=mjilugu2c.mylabserver.com
+ETCD_NAME=<cloud server hostname>
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-INITIAL_CLUSTER=mjilugu1c.mylabserver.com=https://172.31.31.27:2380,mjilugu2c.mylabserver.com=https://172.31.21.192:2380
+INITIAL_CLUSTER=<controller 1 hostname>=https://<controller 1 private ip>:2380,<controller 2 hostname>=https://<controller 2 private ip>:2380
 
 cat << EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]

@@ -30,8 +30,8 @@ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
 # env vars to create systemd service
 
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-CONTROLLER0_IP=172.31.31.27
-CONTROLLER1_IP=172.31.21.192
+CONTROLLER0_IP=<private ip of controller 0>
+CONTROLLER1_IP=<private ip of controller 1>
 
 # Service file for kubernetes api server
 

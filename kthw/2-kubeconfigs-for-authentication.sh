@@ -1,11 +1,14 @@
 #!/bin/bash -e
 
+## Links
+#  https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+
 ## Loadbalancer private IP
-KUBERNETES_ADDRESS=172.31.31.189
+KUBERNETES_ADDRESS=<load balancer ip address>
 
 ## Generate kubelet kubeconfig for each worker node:
 
-for instance in mjilugu3c.mylabserver.com mjilugu4c.mylabserver.com; do
+for instance in <worker 1 hostname> <worker 2 hostname>; do
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
@@ -121,10 +124,10 @@ done
 
 ## Move kubeconfig files to the worker nodes:
 
-scp mjilugu3c.mylabserver.com.kubeconfig kube-proxy.kubeconfig cloud_user@52.212.69.30:~/
-scp mjilugu4c.mylabserver.com.kubeconfig kube-proxy.kubeconfig cloud_user@52.19.2.133:~/
+scp <worker 1 hostname>.kubeconfig kube-proxy.kubeconfig user@<worker 1 public IP>:~/
+scp <worker 2 hostname>.kubeconfig kube-proxy.kubeconfig user@<worker 2 public IP>:~/
 
 ## Move kubeconfig files to the controller nodes:
 
-scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig cloud_user@52.208.230.239:~/
-scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig cloud_user@34.245.191.251:~/
+scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig user@<controller 1 public IP>:~/
+scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig user@<controller 2 public IP>:~/

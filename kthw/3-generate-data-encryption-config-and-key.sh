@@ -4,8 +4,8 @@
 
 ## Generate the kubernetes data encryption config file containing the
 ## encryption key:
-CONTROLLER_1_PUBLIC_IP=52.208.230.239
-CONTROLLER_2_PUBLIC_IP=34.245.191.251
+CONTROLLER_1_PUBLIC_IP=192.168.122.50
+CONTROLLER_2_PUBLIC_IP=192.168.122.55
 ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 
 cat > encryption-config.yaml << EOF
