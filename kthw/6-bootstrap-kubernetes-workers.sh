@@ -6,17 +6,29 @@
 
 ## Install worker binaries
 
-sudo apt-get -y install socat conntrack ipset
+sudo yum -y install socat conntrack ipset wget
 
-wget -q --show-progress --https-only --timestamping \
-  https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.0.0-beta.0/crictl-v1.0.0-beta.0-linux-amd64.tar.gz \
+wget --timestamping \
+  https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.14.0/crictl-v1.14.0-linux-amd64.tar.gz \
   https://storage.googleapis.com/kubernetes-the-hard-way/runsc \
-  https://github.com/opencontainers/runc/releases/download/v1.0.0-rc5/runc.amd64 \
-  https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz \
-  https://github.com/containerd/containerd/releases/download/v1.1.0/containerd-1.1.0.linux-amd64.tar.gz \
-  https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kubectl \
-  https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kube-proxy \
-  https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kubelet
+  https://github.com/opencontainers/runc/releases/download/v1.0.0-rc8/runc.amd64 \
+  https://github.com/containernetworking/plugins/releases/download/v0.8.0/cni-plugins-linux-amd64-v0.8.0.tgz \
+  https://github.com/containerd/containerd/releases/download/v1.2.6/containerd-1.2.6.linux-amd64.tar.gz \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubectl \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kube-proxy \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubelet
+
+wget --timestamping \
+  https://storage.googleapis.com/kubernetes-the-hard-way/runsc \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubectl \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kube-proxy \
+  https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubelet
+
+wget --timestamping \
+  https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.14.0/crictl-v1.14.0-linux-amd64.tar.gz \
+  https://github.com/opencontainers/runc/releases/download/v1.0.0-rc8/runc.amd64 \
+  https://github.com/containernetworking/plugins/releases/download/v0.8.0/cni-plugins-linux-amd64-v0.8.0.tgz \
+  https://github.com/containerd/containerd/releases/download/v1.2.6/containerd-1.2.6.linux-amd64.tar.gz
 
 sudo mkdir -p \
   /etc/cni/net.d \
@@ -30,13 +42,13 @@ chmod +x kubectl kube-proxy kubelet runc.amd64 runsc
 
 sudo mv runc.amd64 runc
 
-sudo mv kubectl kube-proxy kubelet runc runsc /usr/local/bin/
+sudo mv kubectl kube-proxy kubelet runc runsc /usr/bin
 
-sudo tar -xvf crictl-v1.0.0-beta.0-linux-amd64.tar.gz -C /usr/local/bin/
+sudo tar -xvf crictl-v1.14.0-linux-amd64.tar.gz -C /usr/bin
 
-sudo tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
+sudo tar -xvf cni-plugins-linux-amd64-v0.8.0.tgz -C /opt/cni/bin/
 
-sudo tar -xvf containerd-1.1.0.linux-amd64.tar.gz -C /
+sudo tar -xvf containerd-1.2.6.linux-amd64.tar.gz -C /
 
 ## Configure containerd
 
@@ -47,11 +59,11 @@ cat << EOF | sudo tee /etc/containerd/config.taml
     snapshotter = "overlayfs"
     [plugins.cri.containerd.default_runtime]
       runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runc"
+      runtime_engine = "/usr/binrunc"
       runtime_root = ""
     [plugins.cri.containerd.untrusted_workload_runtime]
       runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runsc"
+      runtime_engine = "/usr/binrunsc"
       runtime_root = "/run/containerd/runsc"
 EOF
 
@@ -112,7 +124,7 @@ After=containerd.service
 Requires=containerd.service
 
 [Service]
-ExecStart=/usr/local/bin/kubelet \\
+ExecStart=/usr/bin/kubelet \\
   --config=/var/lib/kubelet/kubelet-config.yaml \\
   --container-runtime=remote \\
   --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
@@ -149,7 +161,7 @@ Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-proxy \\
+ExecStart=/usr/bin/kube-proxy \\
   --config=/var/lib/kube-proxy/kube-proxy-config.yaml
 Restart=on-failure
 RestartSec=5
@@ -157,6 +169,10 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
+
+## Disable swap
+swapoff /path/to/swap/volume
+vi /etc/fstab and commentout swap line
 
 sudo systemctl daemon-reload
 sudo systemctl enable containerd kubelet kube-proxy
@@ -167,3 +183,6 @@ sudo systemctl status containerd kubelet kube-proxy
 # Verify on controller node
 
 kubectl get nodes
+NAME                          STATUS     ROLES    AGE   VERSION
+kube-worker1.example.jilugu   NotReady   <none>   51s   v1.14.2
+kube-worker2.example.jilugu   NotReady   <none>   18m   v1.14.2

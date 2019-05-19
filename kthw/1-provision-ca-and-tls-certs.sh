@@ -85,10 +85,10 @@ cfssl gencert \
 
 ## Kubelet client certificates
 
-WORKER0_HOST=<Public hostname of your first worker node cloud server>
-WORKER0_IP=<Private IP of your first worker node cloud server>
-WORKER1_HOST=<Public hostname of your second worker node cloud server>
-WORKER1_IP=<Private IP of your second worker node cloud server>
+WORKER0_HOST=kube-worker1.example.jilugu
+WORKER0_IP=192.168.122.70
+WORKER1_HOST=kube-worker2.example.jilugu
+WORKER1_IP=192.168.122.75
 
 {
 cat > ${WORKER0_HOST}-csr.json << EOF
@@ -246,7 +246,7 @@ cfssl gencert \
 ## Kubernetes API Server Certificate
 
 cd ~/kthw
-CERT_HOSTNAME=10.32.0.1,<controller node 1 Private IP>,<controller node 1 hostname>,<controller node 2 Private IP>,<controller node 2 hostname>,<API load balancer Private IP>,<API load balancer hostname>,127.0.0.1,localhost,kubernetes.default
+CERT_HOSTNAME=10.32.0.1,192.168.122.50,kube-controller1.example.jilugu,192.168.122.55,kube-controller2.example.jilugu,192.168.122.60,nginx.example.jilugu,127.0.0.1,localhost,kubernetes.default
 
 {
 
@@ -316,11 +316,11 @@ cfssl gencert \
 ## Distributing the certificate files
 
 # Certs for worker nodes:
-scp ca.pem <worker 1 hostname>-key.pem <worker 1 hostname>.pem user@<worker 1 public IP>:~/
-scp ca.pem <worker 2 hostname>-key.pem <worker 2 hostname>.pem user@<worker 2 public IP>:~/
+scp ca.pem kube-worker1.example.jilugu-key.pem kube-worker1.example.jilugu.pem dcuser@192.168.122.70:~/
+scp ca.pem kube-worker2.example.jilugu-key.pem kube-worker2.example.jilugu.pem dcuser@192.168.122.75:~/
 
 # Certs for controller nodes:
 scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem user@<controller 1 public IP>:~/
+    service-account-key.pem service-account.pem dcuser@192.168.122.50:~/
 scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem user@<controller 2 public IP>:~/
+    service-account-key.pem service-account.pem dcuser@192.168.122.55:~/

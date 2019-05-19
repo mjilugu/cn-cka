@@ -6,7 +6,8 @@
 #  https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
 
 ## Download and install etcd on both controller servers
-wget -q --show-progress --https-only --timestamping \
+sudo yum install -y wget
+wget --timestamping \
   "https://github.com/coreos/etcd/releases/download/v3.3.5/etcd-v3.3.5-linux-amd64.tar.gz"
 tar -xvf etcd-v3.3.5-linux-amd64.tar.gz
 sudo mv etcd-v3.3.5-linux-amd64/etcd* /usr/local/bin/
@@ -15,9 +16,9 @@ sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
 
 ## Env vars for creating etcd service file
 #  Controller 1
-ETCD_NAME=<cloud server hostname>
-INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-INITIAL_CLUSTER=<controller 1 hostname>=https://<controller 1 private ip>:2380,<controller 2 hostname>=https://<controller 2 private ip>:2380
+ETCD_NAME=kube-controller1.example.jilugu
+INTERNAL_IP=192.168.122.50
+INITIAL_CLUSTER=kube-controller1.example.jilugu=https://192.168.122.50:2380,kube-controller2.example.jilugu=https://192.168.122.55:2380
 
 cat << EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
@@ -51,9 +52,9 @@ WantedBy=multi-user.target
 EOF
 
 #  Controller 2
-ETCD_NAME=<cloud server hostname>
-INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-INITIAL_CLUSTER=<controller 1 hostname>=https://<controller 1 private ip>:2380,<controller 2 hostname>=https://<controller 2 private ip>:2380
+ETCD_NAME=kube-controller2.example.jilugu
+INTERNAL_IP=192.168.122.55
+INITIAL_CLUSTER=kube-controller1.example.jilugu=https://192.168.122.50:2380,kube-controller2.example.jilugu=https://192.168.122.55:2380
 
 cat << EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
@@ -87,6 +88,9 @@ WantedBy=multi-user.target
 EOF
 
 ## Start etcd service
+sudo firewall-cmd --permanent --add-port 2379/tcp
+sudo firewall-cmd --permanent --add-port 2380/tcp
+sudo firewall-cmd --reload
 sudo systemctl daemon-reload
 sudo systemctl enable etcd
 sudo systemctl start etcd

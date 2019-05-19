@@ -5,7 +5,7 @@
 
 
 # Create tunnel
-ssh -L 6443:localhost:6443 user@<your Load balancer cloud server public IP>
+ssh -L 6443:localhost:6443 dcuser@nginx
 
 # Configure local kubectl
 

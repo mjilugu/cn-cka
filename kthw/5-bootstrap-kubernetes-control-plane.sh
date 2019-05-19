@@ -9,15 +9,15 @@
 
 sudo mkdir -p /etc/kubernetes/config
 
-wget -q --show-progress --https-only --timestamping \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kube-apiserver" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kube-controller-manager" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.10.2/bin/linux/amd64/kubectl"
+wget --timestamping \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kube-apiserver" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kube-controller-manager" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kube-scheduler" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/kubectl"
 
 chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
 
-sudo mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/local/bin/
+sudo mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/bin/
 
 ## Setting up the kubernetes API service
 
@@ -29,9 +29,9 @@ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
 
 # env vars to create systemd service
 
-INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-CONTROLLER0_IP=<private ip of controller 0>
-CONTROLLER1_IP=<private ip of controller 1>
+INTERNAL_IP=192.168.122.55
+CONTROLLER0_IP=192.168.122.50
+CONTROLLER1_IP=192.168.122.55
 
 # Service file for kubernetes api server
 
@@ -41,7 +41,7 @@ Description=Kubernetes API Server
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-apiserver \\
+ExecStart=/usr/bin/kube-apiserver \\
   --advertise-address=${INTERNAL_IP} \\
   --allow-privileged=true \\
   --apiserver-count=3 \\
@@ -79,6 +79,9 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+sudo firewall-cmd --permanent --add-port 30000-32767/tcp
+sudo firewall-cmd --reload
+
 ## Setting up the kubernetes controller manager
 
 sudo cp kube-controller-manager.kubeconfig /var/lib/kubernetes/
@@ -89,7 +92,7 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-controller-manager \\
+ExecStart=/usr/bin/kube-controller-manager \\
   --address=0.0.0.0 \\
   --cluster-cidr=10.200.0.0/16 \\
   --cluster-name=kubernetes \\
@@ -128,7 +131,7 @@ Description=Kubernetes Scheduler
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-scheduler \\
+ExecStart=/usr/bin/kube-scheduler \\
   --config=/etc/kubernetes/config/kube-scheduler.yaml \\
   --v=2
 Restart=on-failure
@@ -148,7 +151,7 @@ kubectl get componentstatuses --kubeconfig admin.kubeconfig
 
 ## Enable HTTP Health Checks
 
-sudo apt-get install -y nginx
+sudo yum install -y nginx
 
 cat > kubernetes.default.svc.cluster.local << EOF
 server {
@@ -170,6 +173,7 @@ sudo systemctl enable nginx
 curl -H "Host: kubernetes.default.svc.cluster.local" -i http://127.0.0.1/healthz
 
 ## Set up RBAC for kubelet authorization
+#  Run on either controller
 
 cat << EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -193,6 +197,7 @@ rules:
       - "*"
 EOF
 
+# Run on either controller
 cat << EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -220,8 +225,8 @@ sudo vi /etc/nginx/nginx.conf
 include /etc/nginx/tcpconf.d/*;
 
 # Env vars for Loadbalancer
-CONTROLLER0_IP=172.31.31.27
-CONTROLLER1_IP=172.31.21.192
+CONTROLLER0_IP=192.168.122.50
+CONTROLLER1_IP=192.168.122.55
 
 # load balancer nginx config file:
 cat << EOF | sudo tee /etc/nginx/tcpconf.d/kubernetes.conf
@@ -239,6 +244,7 @@ stream {
 }
 EOF
 
+semanage port -a -t http_port_t -p tcp 6443
 sudo nginx -s reload
 
 curl -k https://localhost:6443/version
