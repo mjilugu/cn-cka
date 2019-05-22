@@ -124,10 +124,10 @@ done
 
 ## Move kubeconfig files to the worker nodes:
 
-scp kube-worker1.example.jilugu.kubeconfig kube-proxy.kubeconfig dcuser@192.168.122.70:~/
-scp kube-worker2.example.jilugu.kubeconfig kube-proxy.kubeconfig dcuser@192.168.122.75:~/
+scp kube-worker1.example.jilugu.kubeconfig kube-proxy.kubeconfig dcuser@kube-worker1:~/
+scp kube-worker2.example.jilugu.kubeconfig kube-proxy.kubeconfig dcuser@kube-worker2:~/
 
 ## Move kubeconfig files to the controller nodes:
 
-scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig dcuser@192.168.122.50:~/
-scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig dcuser@192.168.122.55:~/
+scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig dcuser@kube-controller1:~/
+scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig dcuser@kube-controller2:~/

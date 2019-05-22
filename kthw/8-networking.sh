@@ -4,6 +4,14 @@
 #  https://kubernetes.io/docs/concepts/cluster-administration/networking/
 #  https://github.com/weaveworks/weave
 
+## debug weave
+# for i in $(kubectl get pods -n kube-system | grep weave | awk '{ print $1}'); do kubectl get pods $i -o wide -n kube-system; kubectl exec -n kube-system $i -c weave -- /home/weave/weave --local status connections; done
+
+
+#### Have a look why we need to turn off selinux for this to work
+getenforce
+
+
 # Enable IP forwarding on both worker nodes
 
 sudo sysctl net.ipv4.conf.all.forwarding=1

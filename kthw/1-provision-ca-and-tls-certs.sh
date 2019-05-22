@@ -316,11 +316,11 @@ cfssl gencert \
 ## Distributing the certificate files
 
 # Certs for worker nodes:
-scp ca.pem kube-worker1.example.jilugu-key.pem kube-worker1.example.jilugu.pem dcuser@192.168.122.70:~/
-scp ca.pem kube-worker2.example.jilugu-key.pem kube-worker2.example.jilugu.pem dcuser@192.168.122.75:~/
+scp ca.pem kube-worker1.example.jilugu-key.pem kube-worker1.example.jilugu.pem dcuser@kube-worker1:~/
+scp ca.pem kube-worker2.example.jilugu-key.pem kube-worker2.example.jilugu.pem dcuser@kube-worker2:~/
 
 # Certs for controller nodes:
 scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem dcuser@192.168.122.50:~/
+    service-account-key.pem service-account.pem dcuser@kube-controller1:~/
 scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem dcuser@192.168.122.55:~/
+    service-account-key.pem service-account.pem dcuser@kube-controller2:~/

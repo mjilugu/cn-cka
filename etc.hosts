@@ -12,6 +12,8 @@ firewall-cmd --reload
 # worker firewall
 firewall-cmd --permanent --add-port 30000-32767/tcp
 firewall-cmd --permanent --add-port 10250/tcp
+firewall-cmd --permanent --add-port 6783/tcp       # weave-net
+firewall-cmd --permanent --add-port 6783-6784/udp  # weave-net
 firewall-cmd --reload
 
 # master
